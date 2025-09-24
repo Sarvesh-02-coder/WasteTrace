@@ -71,10 +71,9 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
 
     setRedeeming(voucher.id);
 
-    // Simulate API call
+    // Simulate async redeem action
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Deduct points
     updateUser({ ecoPoints: totalPoints - voucher.cost });
 
     toast({
@@ -96,9 +95,7 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
           <Gift className="w-5 h-5 text-primary" />
           <span>Eco Rewards</span>
         </CardTitle>
-        <CardDescription>
-          Redeem your eco points for exciting rewards and vouchers
-        </CardDescription>
+        <CardDescription>Redeem your eco points for exciting rewards and vouchers</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -122,26 +119,16 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
 
         {/* Available Vouchers */}
         <div className="space-y-4">
-          <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-            Available Rewards
-          </h4>
-
+          <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Available Rewards</h4>
           {vouchers.map(voucher => {
             const IconComponent = voucher.icon;
             const canRedeem = voucher.available && totalPoints >= voucher.cost;
 
             return (
-              <div
-                key={voucher.id}
-                className={`border rounded-lg p-4 transition-all ${
-                  canRedeem ? 'border-primary bg-eco-light hover:shadow-md' : 'border-border bg-muted/30'
-                }`}
-              >
+              <div key={voucher.id} className={`border rounded-lg p-4 transition-all ${canRedeem ? 'border-primary bg-eco-light hover:shadow-md' : 'border-border bg-muted/30'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${
-                      canRedeem ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
-                    }`}>
+                    <div className={`p-2 rounded-lg ${canRedeem ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
 
@@ -171,9 +158,7 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
 
         {/* How to Earn More */}
         <div className="border-t pt-4">
-          <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">
-            Earn More Points
-          </h4>
+          <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">Earn More Points</h4>
           <div className="text-sm space-y-1">
             <div>• Submit waste: +5 points</div>
             <div>• Complete recycling: +15 points</div>

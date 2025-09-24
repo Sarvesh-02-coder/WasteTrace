@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 import { DashboardStats, WasteTicket } from '../../types';
-import { BarChart3, TrendingUp, FileText, Calendar, Download, Users, Recycle, AlertTriangle } from 'lucide-react';
+import { BarChart3, TrendingUp, FileText, Download, Users, Recycle, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface ComplianceReportsProps {
@@ -12,23 +12,15 @@ interface ComplianceReportsProps {
 }
 
 export const ComplianceReports: React.FC<ComplianceReportsProps> = ({ stats, tickets }) => {
-  const thisMonth = new Date().getMonth();
   const thisYear = new Date().getFullYear();
   
   const monthlyData = [
-    { month: 'Jan', segregation: 72, recycling: 58, participation: 380 },
-    { month: 'Feb', segregation: 75, recycling: 61, participation: 395 },
-    { month: 'Mar', segregation: 78, recycling: 65, participation: 430 },
+    { month: 'Jan', recycling: 58, participation: 380 },
+    { month: 'Feb', recycling: 61, participation: 395 },
+    { month: 'Mar', recycling: 65, participation: 430 },
   ];
 
   const complianceMetrics = [
-    {
-      title: 'Waste Segregation Compliance',
-      current: stats.segregatedWaste,
-      target: 80,
-      status: stats.segregatedWaste >= 80 ? 'success' : stats.segregatedWaste >= 70 ? 'warning' : 'danger',
-      description: 'Percentage of properly segregated waste'
-    },
     {
       title: 'Recycling Rate Achievement',
       current: stats.recyclingRate,
@@ -66,7 +58,7 @@ export const ComplianceReports: React.FC<ComplianceReportsProps> = ({ stats, tic
   return (
     <div className="space-y-6">
       {/* Compliance Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {complianceMetrics.map((metric, index) => (
           <Card key={index}>
             <CardHeader className="pb-3">
@@ -116,22 +108,17 @@ export const ComplianceReports: React.FC<ComplianceReportsProps> = ({ stats, tic
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {monthlyData.map((month, index) => (
+            {monthlyData.map((month) => (
               <div key={month.month} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold">{month.month} {thisYear}</h4>
                   <div className="flex space-x-4 text-sm">
-                    <span className="text-primary">Segregation: {month.segregation}%</span>
                     <span className="text-success">Recycling: {month.recycling}%</span>
                     <span className="text-warning">Participation: {month.participation}</span>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Segregation</div>
-                    <Progress value={month.segregation} className="h-2" />
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Recycling</div>
                     <Progress value={month.recycling} className="h-2 [&>div]:bg-success" />
@@ -248,7 +235,7 @@ export const ComplianceReports: React.FC<ComplianceReportsProps> = ({ stats, tic
             <span>Export Reports</span>
           </CardTitle>
           <CardDescription>
-            Generate detailed compliance and performance reports
+            Generate detailed performance reports
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -260,7 +247,7 @@ export const ComplianceReports: React.FC<ComplianceReportsProps> = ({ stats, tic
             
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <Download className="w-6 h-6" />
-              <span>Compliance Audit</span>
+              <span>Audit Report</span>
             </Button>
             
             <Button variant="outline" className="h-20 flex-col space-y-2">

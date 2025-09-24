@@ -43,15 +43,17 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700">
+      {/* Dark overlay for contrast */}
+      <div className="absolute inset-0 bg-black/25"></div>
+
+      <div className="relative w-full max-w-md space-y-6">
         {/* Logo and Header */}
         <div className="text-center text-white">
           <img src="/logo.png" alt="WasteTrace Logo" className="w-20 h-20 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">WasteTrace</h1>
           <p className="text-white/80 mt-2">End-to-End Waste Tracking System</p>
         </div>
-
 
         {/* Login Form */}
         <Card className="shadow-eco">
@@ -133,7 +135,7 @@ export const Login: React.FC = () => {
         </Card>
 
         <div className="text-center text-white/60 text-sm">
-          <p>WasteTrace</p>
+          <p>BY: Shalvi, Laukika, Sarvesh</p>
         </div>
       </div>
     </div>

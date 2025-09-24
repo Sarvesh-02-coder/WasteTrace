@@ -8,7 +8,7 @@ import { useWasteStore } from '../store/useWasteStore';
 import { HeatmapView } from '../components/Municipality/HeatmapView';
 import { ComplianceReports } from '../components/Municipality/ComplianceReports';
 import { CollectorMonitoring } from '../components/Municipality/CollectorMonitoring';
-import { Map, BarChart3, Users, TrendingUp, Recycle, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Map, BarChart3, Users, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const MunicipalityDashboard: React.FC = () => {
   const { tickets } = useWasteStore();
@@ -20,12 +20,10 @@ export const MunicipalityDashboard: React.FC = () => {
   const collectedWaste = tickets.filter(t => t.status === 'collected').length;
   const pendingWaste = tickets.filter(t => t.status === 'pending').length;
 
-  const segregatedRate = Math.round((totalWaste / Math.max(totalWaste, 1)) * 78); // Demo calculation
   const recyclingRate = Math.round((recycledWaste / Math.max(totalWaste, 1)) * 100);
   const citizenParticipation = 430; // Demo value
 
   const dashboardStats = {
-    segregatedWaste: segregatedRate,
     recyclingRate,
     citizenParticipation,
     totalWasteProcessed: totalWaste
@@ -57,22 +55,7 @@ export const MunicipalityDashboard: React.FC = () => {
     >
       <div className="space-y-8">
         {/* Key Metrics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-gradient-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Segregated Waste</p>
-                  <p className="text-3xl font-bold text-primary">{segregatedRate}%</p>
-                </div>
-                <Recycle className="w-8 h-8 text-primary" />
-              </div>
-              <div className="mt-2">
-                <Progress value={segregatedRate} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
