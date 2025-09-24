@@ -200,18 +200,6 @@ export const CollectorDashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Weight</p>
-                  <p className="text-3xl font-bold text-success">{dailyStats.totalWeight}kg</p>
-                </div>
-                <Package className="w-8 h-8 text-success" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm font-medium text-muted-foreground">Verification Rate</p>
                   <p className="text-3xl font-bold text-warning">{dailyStats.verificationRate}%</p>
                 </div>
@@ -303,15 +291,12 @@ export const CollectorDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Current Stats Display */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="text-center p-3 bg-eco-light rounded-lg">
                   <div className="text-2xl font-bold text-primary">{dailyStats.pickups}</div>
                   <div className="text-sm text-muted-foreground">Pickups Today</div>
                 </div>
-                <div className="text-center p-3 bg-primary/10 rounded-lg">
-                  <div className="text-2xl font-bold text-success">{dailyStats.totalWeight}kg</div>
-                  <div className="text-sm text-muted-foreground">Weight Collected</div>
-                </div>
+            
               </div>
 
               {/* Progress Slider */}

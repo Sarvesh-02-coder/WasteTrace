@@ -3,11 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
-import { TrendingUp, Camera, CheckCircle, Truck, Package } from 'lucide-react';
+import { TrendingUp, Camera, CheckCircle, Package } from 'lucide-react';
 
 interface DailyStats {
   pickups: number;
-  totalWeight: number;
   verificationRate: number;
   completedToday: number;
 }
@@ -22,9 +21,7 @@ export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
   onUpdateProgress
 }) => {
   const targetPickups = 15;
-  const targetWeight = 100;
   const progressPercentage = Math.min((stats.pickups / targetPickups) * 100, 100);
-  const weightPercentage = Math.min((stats.totalWeight / targetWeight) * 100, 100);
 
   return (
     <Card className="shadow-eco">
@@ -48,17 +45,6 @@ export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
             <Progress value={progressPercentage} className="h-3" />
             <div className="text-xs text-muted-foreground mt-1">
               {Math.round(progressPercentage)}% of daily target
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Weight Collected</span>
-              <span className="font-medium">{stats.totalWeight}kg/{targetWeight}kg</span>
-            </div>
-            <Progress value={weightPercentage} className="h-3" />
-            <div className="text-xs text-muted-foreground mt-1">
-              {Math.round(weightPercentage)}% of weight target
             </div>
           </div>
         </div>
@@ -96,11 +82,6 @@ export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
                 High Accuracy
               </Badge>
             )}
-            {stats.totalWeight >= 50 && (
-              <Badge variant="default" className="bg-primary">
-                50kg+ Collected
-              </Badge>
-            )}
           </div>
         </div>
 
@@ -124,7 +105,6 @@ export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
           <div className="font-medium mb-1">Today's Summary</div>
           <div className="space-y-1 text-muted-foreground">
             <div>• {stats.pickups} waste items collected</div>
-            <div>• {stats.totalWeight}kg total weight processed</div>
             <div>• {stats.verificationRate}% verification accuracy</div>
             <div>• All collections documented with photos</div>
           </div>
