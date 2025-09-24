@@ -70,22 +70,23 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
     }
 
     setRedeeming(voucher.id);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Deduct points
     updateUser({ ecoPoints: totalPoints - voucher.cost });
-    
+
     toast({
       title: "Voucher redeemed successfully!",
       description: `${voucher.title} has been sent to your account.`,
     });
-    
+
     setRedeeming('');
   };
 
-  const nextMilestone = [100, 150, 200, 250, 300].find(milestone => milestone > totalPoints) || 300;
+  const milestones = [100, 150, 200, 250, 300];
+  const nextMilestone = milestones.find(m => m > totalPoints) || milestones[milestones.length - 1];
   const progressToNext = Math.min((totalPoints / nextMilestone) * 100, 100);
 
   return (
@@ -99,6 +100,7 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
           Redeem your eco points for exciting rewards and vouchers
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {/* Points Display */}
         <div className="text-center">
@@ -123,16 +125,16 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
           <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
             Available Rewards
           </h4>
-          
-          {vouchers.map((voucher) => {
+
+          {vouchers.map(voucher => {
             const IconComponent = voucher.icon;
             const canRedeem = voucher.available && totalPoints >= voucher.cost;
-            
+
             return (
               <div
                 key={voucher.id}
-                className={`border rounded-lg p-4 ${
-                  canRedeem ? 'border-primary bg-eco-light' : 'border-border bg-muted/30'
+                className={`border rounded-lg p-4 transition-all ${
+                  canRedeem ? 'border-primary bg-eco-light hover:shadow-md' : 'border-border bg-muted/30'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -142,19 +144,13 @@ export const EcoPointsDashboard: React.FC<EcoPointsDashboardProps> = ({ totalPoi
                     }`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
-                    
+
                     <div>
                       <div className="font-semibold">{voucher.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {voucher.description}
-                      </div>
+                      <div className="text-sm text-muted-foreground">{voucher.description}</div>
                       <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {voucher.cost} points
-                        </Badge>
-                        <span className="text-sm font-medium text-primary">
-                          {voucher.value}
-                        </span>
+                        <Badge variant="secondary" className="text-xs">{voucher.cost} points</Badge>
+                        <span className="text-sm font-medium text-primary">{voucher.value}</span>
                       </div>
                     </div>
                   </div>
