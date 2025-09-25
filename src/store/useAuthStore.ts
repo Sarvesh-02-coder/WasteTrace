@@ -15,21 +15,21 @@ const DEMO_USERS: Record<string, User> = {
     id: 'citizen-1',
     email: 'Raju@gmail.com',
     role: 'citizen',
-    name: 'Raju karandikar',
+    name: 'Sarvesh Sapkal',
     ecoPoints: 120,
   },
   'collector@demo': {
     id: 'collector-1',
     email: 'Pratham@gmail.com',
     role: 'collector',
-    name: 'Pratham Tomato',
+    name: 'Laukika Shinde',
     totalWasteCollected: 45,
   },
   'municipal@demo': {
     id: 'municipal-1',
     email: 'harsh@gmail.com',
     role: 'municipality',
-    name: 'Harsh Bari',
+    name: 'Shalvi Maheshwari',
   },
 };
 
