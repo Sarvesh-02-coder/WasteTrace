@@ -15,6 +15,21 @@ import { Input } from '../components/ui/input';
 import { Slider } from '../components/ui/slider';
 import { toast } from '../hooks/use-toast';
 
+// ---------- JSON Parsing Helper ----------
+const formatClassification = (classification: string | undefined) => {
+  if (!classification) return "NA";
+  try {
+    const parsed: Record<string, number> = JSON.parse(classification);
+    const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
+    if (filtered.length === 0) return "No Waste";
+    return filtered
+      .map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`)
+      .join(", ");
+  } catch {
+    return classification;
+  }
+};
+
 export const CollectorDashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { tickets, getTicketByWasteId, updateTicketStatus } = useWasteStore();
@@ -117,11 +132,6 @@ export const CollectorDashboard: React.FC = () => {
       });
       return;
     }
-    setProofPhotoStep(true);
-    setShowCamera(true);
-  };
-
-  const handleUpdateProgress_old = () => {
     setProofPhotoStep(true);
     setShowCamera(true);
   };
@@ -402,7 +412,7 @@ export const CollectorDashboard: React.FC = () => {
                         </div>
                         
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>{ticket.classification}</span>
+                          <span>{formatClassification(ticket.classification)}</span>
                           {ticket.location && (
                             <span className="flex items-center space-x-1">
                               <MapPin className="w-3 h-3" />

@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { CameraComponent } from '../ui/camera';
 import { useWasteStore } from '../../store/useWasteStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useLocationStore } from '../../store/useLocationStore';
 import { Camera, Upload, Send, ArrowLeft } from 'lucide-react';
 import { toast } from '../../hooks/use-toast';
 
@@ -30,6 +31,7 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
 
   const { createWasteTicket } = useWasteStore();
   const { user } = useAuthStore();
+  const area = useLocationStore((state) => state.area);
 
   const handleCameraCapture = (data: string) => {
     setImageData(data);
@@ -56,6 +58,22 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
     }
   };
 
+  const getCurrentLocation = (): Promise<{ lat: number; lng: number; address: string }> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject("Geolocation not supported");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            address: area || "Unknown location",
+          });
+        },
+        (err) => reject(err)
+      );
+    });
+  };
+
   const handleSubmit = async () => {
     if (!user || !imageFile) return;
     setUploading(true);
@@ -63,7 +81,6 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
     try {
       let detected: WasteClassification | null = null;
 
-      // Call classify endpoint
       const formData = new FormData();
       formData.append("file", imageFile);
 
@@ -78,8 +95,14 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
         setClassification(detected);
       }
 
-      // Create ticket in store
-      await createWasteTicket(user.id, imageData, detected ? JSON.stringify(detected) : undefined);
+      const location = await getCurrentLocation();
+
+      await createWasteTicket(
+        user.id,
+        imageData,
+        detected ? JSON.stringify(detected) : undefined,
+        location
+      );
 
       toast({
         title: "Waste submitted successfully!",
@@ -130,6 +153,12 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
                 {Object.entries(classification).map(([cat, count]) => (
                   <div key={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}: {count}</div>
                 ))}
+              </div>
+            )}
+
+            {area && (
+              <div className="text-center text-sm text-muted-foreground">
+                <strong>Location:</strong> {area}
               </div>
             )}
 

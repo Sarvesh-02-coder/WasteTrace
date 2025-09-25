@@ -10,11 +10,13 @@ import { CollectorDashboard } from "./pages/CollectorDashboard";
 import { MunicipalityDashboard } from "./pages/MunicipalityDashboard";
 import { useAuthStore } from "./store/useAuthStore";
 import NotFound from "./pages/NotFound";
+import { useLocation } from "./hooks/useLocation"; // <-- import hook
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const { isAuthenticated, user } = useAuthStore();
+  const { loading: locationLoading, error: locationError } = useLocation(); // <-- call hook
 
   const getDefaultRoute = () => {
     if (!isAuthenticated || !user) return "/login";
@@ -25,6 +27,10 @@ const App = () => {
       default: return "/login";
     }
   };
+
+  // You can show a loader while fetching location
+  if (locationLoading) return <div>Fetching your location...</div>;
+  if (locationError) return <div>{locationError}</div>;
 
   return (
     <QueryClientProvider client={queryClient}>

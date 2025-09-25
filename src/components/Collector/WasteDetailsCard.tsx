@@ -25,6 +25,18 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
     }
   };
 
+  const formatClassification = (classification: string | undefined) => {
+    if (!classification) return 'NA';
+    try {
+      const parsed: Record<string, number> = JSON.parse(classification);
+      const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
+      if (filtered.length === 0) return 'NA';
+      return filtered.map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`).join(', ');
+    } catch {
+      return classification;
+    }
+  };
+
   return (
     <Card className="border-primary shadow-eco">
       <CardHeader>
@@ -41,14 +53,13 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
           Review waste item details and take collection action
         </CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {/* Waste ID and Status */}
         <div className="flex items-center justify-between">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Waste ID</label>
-            <div className="text-2xl font-mono font-bold text-primary">
-              {ticket.wasteId}
-            </div>
+            <div className="text-2xl font-mono font-bold text-primary">{ticket.wasteId}</div>
           </div>
           <Badge className={getStatusColor(ticket.status)}>
             {ticket.status.toUpperCase()}
@@ -74,9 +85,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Classification</label>
-              <div className="font-medium">{ticket.classification}</div>
+              <div className="font-medium">{formatClassification(ticket.classification)}</div>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium text-muted-foreground">Submitted</label>
               <div className="flex items-center space-x-2">
@@ -92,11 +103,11 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
                 <label className="text-sm font-medium text-muted-foreground">Location</label>
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{ticket.location.address}</span>
+                  <span className="text-sm">{ticket.location.address || 'Unknown Location'}</span>
                 </div>
               </div>
             )}
-            
+
             <div>
               <label className="text-sm font-medium text-muted-foreground">Citizen ID</label>
               <div className="font-mono text-sm">{ticket.citizenId}</div>
@@ -113,7 +124,7 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
               <span className="text-sm">Waste submitted by citizen</span>
               <span className="text-xs text-success">✓</span>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <div className={`w-2 h-2 rounded-full ${
                 ['collected', 'recycled'].includes(ticket.status) ? 'bg-success' : 'bg-warning animate-pulse'
@@ -125,11 +136,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
                 <span className="text-xs text-warning">Pending</span>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                ticket.status === 'recycled' ? 'bg-success' : 'bg-muted'
-              }`}></div>
+              <div className={`w-2 h-2 rounded-full ${ticket.status === 'recycled' ? 'bg-success' : 'bg-muted'}`}></div>
               <span className="text-sm">Processing and recycling</span>
               {ticket.status === 'recycled' ? (
                 <span className="text-xs text-success">✓</span>
@@ -148,7 +157,7 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
               Collect Waste
             </Button>
           )}
-          
+
           {ticket.status === 'collected' && (
             <div className="flex-1 p-3 bg-eco-light rounded-lg text-center">
               <div className="text-sm font-medium text-success">Collected</div>
@@ -157,19 +166,15 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
               </div>
             </div>
           )}
-          
+
           {ticket.status === 'recycled' && (
             <div className="flex-1 p-3 bg-success/10 rounded-lg text-center">
               <div className="text-sm font-medium text-success">Recycled</div>
-              <div className="text-xs text-muted-foreground">
-                Process completed
-              </div>
+              <div className="text-xs text-muted-foreground">Process completed</div>
             </div>
           )}
-          
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
+
+          <Button variant="outline" onClick={onClose}>Close</Button>
         </div>
       </CardContent>
     </Card>

@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
-import { TrendingUp, Camera, CheckCircle, Package } from 'lucide-react';
+import { TrendingUp, Camera, CheckCircle, Package, MapPin } from 'lucide-react';
+import { WasteTicket } from '../../types';
 
 interface DailyStats {
   pickups: number;
@@ -13,11 +14,22 @@ interface DailyStats {
 
 interface DailyProgressCardProps {
   stats: DailyStats;
+  tickets?: WasteTicket[]; // Optional list of today's collected tickets
   onUpdateProgress: () => void;
+}
+
+interface WasteClassification {
+  cardboard: number;
+  glass: number;
+  metal: number;
+  paper: number;
+  plastic: number;
+  trash: number;
 }
 
 export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
   stats,
+  tickets = [],
   onUpdateProgress
 }) => {
   const targetPickups = 15;
@@ -100,13 +112,48 @@ export const DailyProgressCard: React.FC<DailyProgressCardProps> = ({
           </p>
         </div>
 
-        {/* Progress Summary */}
+        {/* Progress Summary with Locations & Classification */}
         <div className="bg-muted p-3 rounded-lg text-sm">
           <div className="font-medium mb-1">Today's Summary</div>
           <div className="space-y-1 text-muted-foreground">
             <div>• {stats.pickups} waste items collected</div>
             <div>• {stats.verificationRate}% verification accuracy</div>
             <div>• All collections documented with photos</div>
+            {tickets.length > 0 && (
+              <>
+                <div className="mt-2 font-medium">Collected Locations & Waste Types:</div>
+                <ul className="list-disc list-inside text-xs text-muted-foreground">
+                  {tickets.map((t) => {
+                    // Parse classification JSON safely
+                    let classification: WasteClassification | null = null;
+                    try { classification = t.classification ? JSON.parse(t.classification) : null; } catch { classification = null; }
+
+                    // Filter only non-zero categories
+                    const filteredClassification = classification
+                      ? Object.fromEntries(Object.entries(classification).filter(([_, count]) => count > 0))
+                      : null;
+
+                    return (
+                      <li key={t.id} className="flex flex-col mb-1">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-3 h-3 text-muted-foreground" />
+                          <span>{t.location?.address || 'Unknown Location'}</span>
+                        </div>
+                        {filteredClassification && (
+                          <div className="flex flex-wrap gap-1 ml-4 mt-1">
+                            {Object.entries(filteredClassification).map(([cat, count]) => (
+                              <Badge key={cat} className="bg-primary text-primary-foreground text-xs">
+                                {cat.charAt(0).toUpperCase() + cat.slice(1)}: {count}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </CardContent>

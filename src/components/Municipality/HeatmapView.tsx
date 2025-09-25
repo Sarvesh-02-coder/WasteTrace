@@ -12,39 +12,48 @@ interface HeatmapViewProps {
   tickets: WasteTicket[];
 }
 
-const mapMarkers = [
-  { id: 1, lat: 28.6139, lng: 77.2090, status: "pending", count: 5, area: "Central Delhi" },
-  { id: 2, lat: 28.5355, lng: 77.3910, status: "collected", count: 3, area: "Noida" },
-  { id: 3, lat: 28.4595, lng: 77.0266, status: "recycled", count: 6, area: "Gurgaon" },
-  { id: 4, lat: 28.7041, lng: 77.1025, status: "pending", count: 4, area: "North Delhi" },
-  { id: 5, lat: 28.6304, lng: 77.2177, status: "collected", count: 2, area: "Connaught Place" },
-];
+// Helper to format classification JSON
+const formatClassification = (classification: string | undefined) => {
+  if (!classification) return "NA";
+  try {
+    const parsed: Record<string, number> = JSON.parse(classification);
+    const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
+    if (filtered.length === 0) return "No Waste";
+    return filtered
+      .map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`)
+      .join(", ");
+  } catch {
+    return classification;
+  }
+};
 
-const HeatLayer: React.FC<{ markers: typeof mapMarkers }> = ({ markers }) => {
+const HeatLayer: React.FC<{ tickets: WasteTicket[] }> = ({ tickets }) => {
   const map = useMap();
 
   useEffect(() => {
-    const heatPoints = markers.map((m) => [
-      m.lat,
-      m.lng,
-      m.status === "pending" ? 0.8 : m.status === "collected" ? 0.5 : 0.3,
-    ]);
+    const heatPoints = tickets
+      .filter((t) => t.location)
+      .map((t) => [
+        t.location!.lat,
+        t.location!.lng,
+        t.status === "pending" ? 0.8 : t.status === "collected" ? 0.5 : 0.3,
+      ]);
 
     const heat = (L as any).heatLayer(heatPoints, {
       radius: 35,
       blur: 20,
       maxZoom: 17,
       gradient: {
-        0.3: "green",  // recycled
-        0.5: "yellow", // collected
-        0.8: "red",    // pending
+        0.3: "green",   // recycled
+        0.5: "yellow",  // collected
+        0.8: "red",     // pending
       },
     }).addTo(map);
 
     return () => {
       map.removeLayer(heat);
     };
-  }, [markers, map]);
+  }, [tickets, map]);
 
   return null;
 };
@@ -52,19 +61,27 @@ const HeatLayer: React.FC<{ markers: typeof mapMarkers }> = ({ markers }) => {
 export const HeatmapView: React.FC<HeatmapViewProps> = ({ tickets }) => {
   const getMarkerColor = (status: string) => {
     switch (status) {
-      case "pending": return "bg-destructive";
-      case "collected": return "bg-warning";
-      case "recycled": return "bg-success";
-      default: return "bg-muted";
+      case "pending":
+        return "bg-destructive";
+      case "collected":
+        return "bg-warning";
+      case "recycled":
+        return "bg-success";
+      default:
+        return "bg-muted";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "pending": return <AlertCircle className="w-4 h-4" />;
-      case "collected": return <Package className="w-4 h-4" />;
-      case "recycled": return <Package className="w-4 h-4" />;
-      default: return null;
+      case "pending":
+        return <AlertCircle className="w-4 h-4" />;
+      case "collected":
+        return <Package className="w-4 h-4" />;
+      case "recycled":
+        return <Package className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -82,7 +99,6 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ tickets }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Interactive Map */}
           <MapContainer
             center={[22.9734, 78.6569]} // Center of India
             zoom={5}
@@ -95,35 +111,37 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ tickets }) => {
             />
 
             {/* Heatmap */}
-            <HeatLayer markers={mapMarkers} />
+            <HeatLayer tickets={tickets} />
 
-            {/* Colored CircleMarkers */}
-            {mapMarkers.map((marker) => (
-              <CircleMarker
-                key={marker.id}
-                center={[marker.lat, marker.lng]}
-                radius={10}
-                pathOptions={{
-                  color:
-                    marker.status === "pending"
-                      ? "red"
-                      : marker.status === "collected"
-                      ? "yellow"
-                      : "green",
-                  fillColor:
-                    marker.status === "pending"
-                      ? "red"
-                      : marker.status === "collected"
-                      ? "yellow"
-                      : "green",
-                  fillOpacity: 0.8,
-                }}
-              >
-                <Tooltip direction="top" offset={[0, -5]} opacity={1}>
-                  <strong>{marker.area}</strong> — {marker.count} {marker.status}
-                </Tooltip>
-              </CircleMarker>
-            ))}
+            {/* CircleMarkers */}
+            {tickets
+              .filter((t) => t.location)
+              .map((ticket) => (
+                <CircleMarker
+                  key={ticket.id}
+                  center={[ticket.location!.lat, ticket.location!.lng]}
+                  radius={10}
+                  pathOptions={{
+                    color:
+                      ticket.status === "pending"
+                        ? "red"
+                        : ticket.status === "collected"
+                        ? "yellow"
+                        : "green",
+                    fillColor:
+                      ticket.status === "pending"
+                        ? "red"
+                        : ticket.status === "collected"
+                        ? "yellow"
+                        : "green",
+                    fillOpacity: 0.8,
+                  }}
+                >
+                  <Tooltip direction="top" offset={[0, -5]} opacity={1}>
+                    <strong>{formatClassification(ticket.classification)}</strong> — {ticket.status}
+                  </Tooltip>
+                </CircleMarker>
+              ))}
           </MapContainer>
 
           {/* Map Legend */}
@@ -144,44 +162,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ tickets }) => {
         </CardContent>
       </Card>
 
-      {/* Area-wise Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mapMarkers.map((area) => (
-          <Card key={area.id}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold">{area.area}</h4>
-                <Badge className={getMarkerColor(area.status)}>
-                  {getStatusIcon(area.status)}
-                  <span className="ml-1 capitalize">{area.status}</span>
-                </Badge>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active Items:</span>
-                  <span className="font-medium">{area.count}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Last Update:</span>
-                  <span className="text-muted-foreground">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {Math.floor(Math.random() * 60)} min ago
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Priority:</span>
-                  <span className={area.status === "pending" ? "text-destructive" : "text-success"}>
-                    {area.status === "pending" ? "High" : "Normal"}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Real-time Updates */}
+      {/* Real-time Activity */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
@@ -199,7 +180,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ tickets }) => {
                   <div>
                     <span className="font-mono text-sm">{ticket.wasteId}</span>
                     <span className="mx-2 text-muted-foreground">•</span>
-                    <span className="text-sm">{ticket.classification}</span>
+                    <span className="text-sm">{formatClassification(ticket.classification)}</span>
                   </div>
                 </div>
                 <div className="text-right">

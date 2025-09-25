@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
 import { WasteTicket } from '../../types';
-import { Users, MapPin, Camera, Clock, CheckCircle, TrendingUp, Eye } from 'lucide-react';
+import { Users, MapPin, Camera, Clock, CheckCircle, Eye } from 'lucide-react';
 
 interface CollectorMonitoringProps {
   tickets: WasteTicket[];
@@ -44,66 +44,30 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
       name: 'Eco Collector',
       email: 'collector@demo',
       status: 'active',
-      dailyStats: {
-        pickups: 12,
-        weight: 75,
-        verificationRate: 98,
-        hoursWorked: 7.5,
-      },
-      location: {
-        area: 'Central Delhi',
-        lastUpdate: '5 minutes ago',
-      },
+      dailyStats: { pickups: 12, weight: 75, verificationRate: 98, hoursWorked: 7.5 },
+      location: { area: 'Central Delhi', lastUpdate: '5 minutes ago' },
       proofPhotos: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg'],
-      performance: {
-        weeklyPickups: 68,
-        accuracy: 97,
-        rating: 4.8,
-      },
+      performance: { weeklyPickups: 68, accuracy: 97, rating: 4.8 },
     },
     {
       id: 'collector-2',
       name: 'Green Guardian',
       email: 'guardian@demo',
       status: 'busy',
-      dailyStats: {
-        pickups: 8,
-        weight: 45,
-        verificationRate: 94,
-        hoursWorked: 5.2,
-      },
-      location: {
-        area: 'Noida Sector 18',
-        lastUpdate: '12 minutes ago',
-      },
+      dailyStats: { pickups: 8, weight: 45, verificationRate: 94, hoursWorked: 5.2 },
+      location: { area: 'Noida Sector 18', lastUpdate: '12 minutes ago' },
       proofPhotos: ['/placeholder.svg', '/placeholder.svg'],
-      performance: {
-        weeklyPickups: 52,
-        accuracy: 94,
-        rating: 4.5,
-      },
+      performance: { weeklyPickups: 52, accuracy: 94, rating: 4.5 },
     },
     {
       id: 'collector-3',
       name: 'Waste Warrior',
       email: 'warrior@demo',
       status: 'inactive',
-      dailyStats: {
-        pickups: 0,
-        weight: 0,
-        verificationRate: 0,
-        hoursWorked: 0,
-      },
-      location: {
-        area: 'Gurgaon',
-        lastUpdate: '2 hours ago',
-      },
+      dailyStats: { pickups: 0, weight: 0, verificationRate: 0, hoursWorked: 0 },
+      location: { area: 'Gurgaon', lastUpdate: '2 hours ago' },
       proofPhotos: [],
-      performance: {
-        weeklyPickups: 35,
-        accuracy: 89,
-        rating: 4.2,
-      },
+      performance: { weeklyPickups: 35, accuracy: 89, rating: 4.2 },
     },
   ];
 
@@ -136,9 +100,7 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
         {collectors.map((collector) => (
           <Card 
             key={collector.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedCollector === collector.id ? 'ring-2 ring-primary' : ''
-            }`}
+            className={`cursor-pointer transition-all hover:shadow-md ${selectedCollector === collector.id ? 'ring-2 ring-primary' : ''}`}
             onClick={() => setSelectedCollector(collector.id)}
           >
             <CardHeader className="pb-3">
@@ -205,7 +167,6 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                 </Button>
               </div>
 
-              {/* Last Update */}
               <div className="text-xs text-muted-foreground text-center">
                 Last update: {collector.location.lastUpdate}
               </div>
@@ -235,7 +196,6 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                   {/* Performance Metrics */}
                   <div className="space-y-4">
                     <h4 className="font-semibold">Performance Metrics</h4>
-                    
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
@@ -244,7 +204,6 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                         </div>
                         <Progress value={(collector.performance.weeklyPickups / 75) * 100} />
                       </div>
-                      
                       <div>
                         <div className="flex justify-between text-sm mb-1">
                           <span>Accuracy Rate</span>
@@ -252,7 +211,6 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                         </div>
                         <Progress value={collector.performance.accuracy} className="[&>div]:bg-success" />
                       </div>
-                      
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Rating</span>
                         <div className="flex items-center space-x-2">
@@ -266,12 +224,11 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                   {/* Activity Timeline */}
                   <div className="space-y-4">
                     <h4 className="font-semibold">Recent Activity</h4>
-                    
                     <div className="space-y-3">
                       {tickets
                         .filter(t => t.collectorId === collector.id)
                         .slice(0, 5)
-                        .map((ticket, index) => (
+                        .map((ticket) => (
                           <div key={ticket.id} className="flex items-center space-x-3 p-2 bg-muted/30 rounded-lg">
                             <div className={`w-2 h-2 rounded-full ${
                               ticket.status === 'recycled' ? 'bg-success' :
@@ -279,7 +236,9 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                             }`}></div>
                             <div className="flex-1">
                               <div className="text-sm font-medium">{ticket.wasteId}</div>
-                              <div className="text-xs text-muted-foreground">{ticket.classification}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {ticket.classification} • {ticket.location?.address || 'Unknown Location'}
+                              </div>
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {new Date(ticket.timestamps.created).toLocaleTimeString()}
@@ -301,9 +260,7 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Proof Photos</CardTitle>
-              <Button variant="ghost" onClick={() => setShowProofPhotos(null)}>
-                ×
-              </Button>
+              <Button variant="ghost" onClick={() => setShowProofPhotos(null)}>×</Button>
             </div>
             <CardDescription>
               Collection verification photos from {collectors.find(c => c.id === showProofPhotos)?.name}
@@ -320,16 +277,11 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
                   </div>
                 );
               }
-
               return (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {collector.proofPhotos.map((photo, index) => (
                     <div key={index} className="space-y-2">
-                      <img
-                        src={photo}
-                        alt={`Proof photo ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
+                      <img src={photo} alt={`Proof photo ${index + 1}`} className="w-full h-32 object-cover rounded-lg border" />
                       <div className="text-xs text-muted-foreground text-center">
                         Photo {index + 1} - {new Date().toLocaleDateString()}
                       </div>
@@ -350,30 +302,21 @@ export const CollectorMonitoring: React.FC<CollectorMonitoringProps> = ({ ticket
             <div className="text-sm text-muted-foreground">Active Collectors</div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-success">
-              {collectors.reduce((sum, c) => sum + c.dailyStats.pickups, 0)}
-            </div>
+            <div className="text-2xl font-bold text-success">{collectors.reduce((sum, c) => sum + c.dailyStats.pickups, 0)}</div>
             <div className="text-sm text-muted-foreground">Total Pickups Today</div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-warning">
-              {Math.round(collectors.reduce((sum, c) => sum + c.performance.accuracy, 0) / collectors.length)}%
-            </div>
+            <div className="text-2xl font-bold text-warning">{Math.round(collectors.reduce((sum, c) => sum + c.performance.accuracy, 0) / collectors.length)}%</div>
             <div className="text-sm text-muted-foreground">Average Accuracy</div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold">
-              {collectors.reduce((sum, c) => sum + c.proofPhotos.length, 0)}
-            </div>
+            <div className="text-2xl font-bold">{collectors.reduce((sum, c) => sum + c.proofPhotos.length, 0)}</div>
             <div className="text-sm text-muted-foreground">Proof Photos</div>
           </CardContent>
         </Card>
