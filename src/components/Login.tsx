@@ -43,9 +43,13 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700">
+    <div 
+    className="relative min-h-screen flex items-center justify-center p-4 bg-cover bg-center" 
+    style={{ backgroundImage: "url('/background.jpg')" }}
+>
+
       {/* Dark overlay for contrast */}
-      <div className="absolute inset-0 bg-black/25"></div>
+      <div className="absolute inset-0 bg-black/45"></div>
 
       <div className="relative w-full max-w-md space-y-6">
         {/* Logo and Header */}
