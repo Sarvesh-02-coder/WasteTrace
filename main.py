@@ -88,12 +88,20 @@ def classify_and_count(image_path: Path) -> dict[str, int]:
 # =========================
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://wastetrace.vercel.app"],
+    allow_origins=[
+        "https://waste-trace.vercel.app",   # production frontend
+        "http://localhost:5173",            # local dev (Vite)
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ✅ Keep tickets API
 app.include_router(tickets_router)
