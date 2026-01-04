@@ -92,15 +92,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://waste-trace.vercel.app",   # production frontend
-        "http://localhost:5173",            # local dev (Vite)
-        "http://localhost:3000"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],        # ✅ allow all origins
+    allow_credentials=False,    # REQUIRED with "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # ✅ Keep tickets API
