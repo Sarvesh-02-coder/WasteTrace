@@ -5,6 +5,35 @@ from db import tickets_ref
 
 router = APIRouter()
 
+from fastapi import APIRouter
+from datetime import datetime
+from db import tickets_ref
+
+router = APIRouter()
+
+@router.put("/tickets/{waste_id}/status")
+def update_ticket_status(waste_id: str, payload: dict):
+    doc_ref = tickets_ref.document(waste_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return {"error": "Ticket not found"}
+
+    update_data = {
+        "status": payload.get("status"),
+        "updatedAt": datetime.utcnow().isoformat(),
+    }
+
+    if payload.get("collectorId"):
+        update_data["collectorId"] = payload["collectorId"]
+
+    if payload.get("proofImageUrl"):
+        update_data["proofImageUrl"] = payload["proofImageUrl"]
+
+    doc_ref.update(update_data)
+
+    return {"success": True, "wasteId": waste_id}
+
 
 @router.post("/tickets")
 def create_ticket(payload: dict):

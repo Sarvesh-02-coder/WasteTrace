@@ -90,13 +90,22 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://wastetrace.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ✅ Keep tickets API
 app.include_router(tickets_router)
+
+@app.get("/")
+def health():
+    return {
+        "status": "WasteTrace backend running",
+        "service": "FastAPI",
+        "env": "production"
+    }
+
 
 # =========================
 # 🔥 CLASSIFY IMAGE ENDPOINT

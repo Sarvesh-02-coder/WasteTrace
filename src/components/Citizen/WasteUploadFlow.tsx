@@ -88,7 +88,7 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
       const formData = new FormData();
       formData.append('file', imageFile);
 
-      const res = await fetch('http://127.0.0.1:8000/classify-image', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/classify-image`, {
         method: 'POST',
         body: formData,
       });
