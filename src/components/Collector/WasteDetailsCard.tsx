@@ -31,7 +31,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
       const parsed: Record<string, number> = JSON.parse(classification);
       const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
       if (filtered.length === 0) return 'NA';
-      return filtered.map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`).join(', ');
+      return filtered
+        .map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`)
+        .join(', ');
     } catch {
       return classification;
     }
@@ -59,7 +61,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Waste ID</label>
-            <div className="text-2xl font-mono font-bold text-primary">{ticket.wasteId}</div>
+            <div className="text-2xl font-mono font-bold text-primary">
+              {ticket.wasteId}
+            </div>
           </div>
           <Badge className={getStatusColor(ticket.status)}>
             {ticket.status.toUpperCase()}
@@ -85,14 +89,20 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Classification</label>
-              <div className="font-medium">{formatClassification(ticket.classification)}</div>
+              <div className="font-medium">
+                {formatClassification(ticket.classification)}
+              </div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-muted-foreground">Submitted</label>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span>{new Date(ticket.timestamps.created).toLocaleDateString()}</span>
+                <span>
+                  {ticket.timestamps?.created
+                    ? new Date(ticket.timestamps.created).toLocaleDateString()
+                    : 'Unknown'}
+                </span>
               </div>
             </div>
           </div>
@@ -103,7 +113,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
                 <label className="text-sm font-medium text-muted-foreground">Location</label>
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{ticket.location.address || 'Unknown Location'}</span>
+                  <span className="text-sm">
+                    {ticket.location.address || 'Unknown Location'}
+                  </span>
                 </div>
               </div>
             )}
@@ -126,9 +138,13 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
             </div>
 
             <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                ['collected', 'recycled'].includes(ticket.status) ? 'bg-success' : 'bg-warning animate-pulse'
-              }`}></div>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  ['collected', 'recycled'].includes(ticket.status)
+                    ? 'bg-success'
+                    : 'bg-warning animate-pulse'
+                }`}
+              ></div>
               <span className="text-sm">Collection by waste collector</span>
               {['collected', 'recycled'].includes(ticket.status) ? (
                 <span className="text-xs text-success">✓</span>
@@ -138,7 +154,11 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
             </div>
 
             <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${ticket.status === 'recycled' ? 'bg-success' : 'bg-muted'}`}></div>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  ticket.status === 'recycled' ? 'bg-success' : 'bg-muted'
+                }`}
+              ></div>
               <span className="text-sm">Processing and recycling</span>
               {ticket.status === 'recycled' ? (
                 <span className="text-xs text-success">✓</span>
@@ -162,7 +182,10 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
             <div className="flex-1 p-3 bg-eco-light rounded-lg text-center">
               <div className="text-sm font-medium text-success">Collected</div>
               <div className="text-xs text-muted-foreground">
-                Collected on {ticket.timestamps.collected && new Date(ticket.timestamps.collected).toLocaleDateString()}
+                Collected on{' '}
+                {ticket.timestamps?.collected
+                  ? new Date(ticket.timestamps.collected).toLocaleDateString()
+                  : '—'}
               </div>
             </div>
           )}
@@ -174,7 +197,9 @@ export const WasteDetailsCard: React.FC<WasteDetailsCardProps> = ({
             </div>
           )}
 
-          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </CardContent>
     </Card>

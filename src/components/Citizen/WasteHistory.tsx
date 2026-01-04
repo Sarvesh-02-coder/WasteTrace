@@ -4,8 +4,18 @@ import { Badge } from '../ui/badge';
 import { useWasteStore } from '../../store/useWasteStore';
 import { History, Package, Calendar, MapPin, Award } from 'lucide-react';
 
+/** 🔒 Safe helpers to support both OLD and Firestore ticket schemas */
+const getCreatedAt = (ticket: any) =>
+  ticket.timestamps?.created || ticket.createdAt || null;
+
+const getCollectedAt = (ticket: any) =>
+  ticket.timestamps?.collected || null;
+
+const getRecycledAt = (ticket: any) =>
+  ticket.timestamps?.recycled || null;
+
 export const WasteHistory: React.FC = () => {
-  const tickets = useWasteStore((state) => state.tickets); // 👈 subscribe to store
+  const tickets = useWasteStore((state) => state.tickets);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -20,21 +30,25 @@ export const WasteHistory: React.FC = () => {
     }
   };
 
-  const sortedTickets = [...tickets].sort(
-    (a, b) => new Date(b.timestamps.created).getTime() - new Date(a.timestamps.created).getTime()
-  );
+  /** ✅ Safe sort (no crash if timestamps missing) */
+  const sortedTickets = [...tickets].sort((a, b) => {
+    const aTime = getCreatedAt(a);
+    const bTime = getCreatedAt(b);
+    return new Date(bTime || 0).getTime() - new Date(aTime || 0).getTime();
+  });
 
-  const formatClassification = (classification: string | undefined) => {
+  const formatClassification = (classification?: string) => {
     if (!classification) return 'NA';
-    let parsed: Record<string, number>;
     try {
-      parsed = JSON.parse(classification);
+      const parsed = JSON.parse(classification);
+      const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
+      if (filtered.length === 0) return 'NA';
+      return filtered
+        .map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`)
+        .join(', ');
     } catch {
-      return 'NA';
+      return classification; // fallback if it's already a string
     }
-    const filtered = Object.entries(parsed).filter(([_, count]) => count > 0);
-    if (filtered.length === 0) return 'NA';
-    return filtered.map(([cat, count]) => `${cat.charAt(0).toUpperCase() + cat.slice(1)}: ${count}`).join(', ');
   };
 
   return (
@@ -44,7 +58,9 @@ export const WasteHistory: React.FC = () => {
           <History className="w-5 h-5" />
           <span>Waste History</span>
         </CardTitle>
-        <CardDescription>Track all your submitted waste items and their current status</CardDescription>
+        <CardDescription>
+          Track all your submitted waste items and their current status
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -60,26 +76,39 @@ export const WasteHistory: React.FC = () => {
           <div className="space-y-4">
             {sortedTickets.map((ticket) => {
               const stages = [
-                { label: 'Submitted', completed: true, timestamp: ticket.timestamps.created },
-                { label: 'Collected', completed: ticket.status === 'collected' || ticket.status === 'recycled', timestamp: ticket.timestamps.collected },
-                { label: 'Recycled', completed: ticket.status === 'recycled', timestamp: ticket.timestamps.recycled },
+                { label: 'Submitted', completed: true, timestamp: getCreatedAt(ticket) },
+                {
+                  label: 'Collected',
+                  completed: ticket.status === 'collected' || ticket.status === 'recycled',
+                  timestamp: getCollectedAt(ticket),
+                },
+                {
+                  label: 'Recycled',
+                  completed: ticket.status === 'recycled',
+                  timestamp: getRecycledAt(ticket),
+                },
               ];
 
               return (
                 <div
-                  key={ticket.id}
+                  key={ticket.id || ticket.wasteId}
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow flex items-start justify-between"
                 >
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center space-x-3">
-                      <span className="font-mono font-bold text-primary">{ticket.wasteId}</span>
-                      <Badge className={getStatusColor(ticket.status)}>{ticket.status}</Badge>
-                      {ticket.ecoPointsAwarded && (
+                      <span className="font-mono font-bold text-primary">
+                        {ticket.wasteId}
+                      </span>
+                      <Badge className={getStatusColor(ticket.status)}>
+                        {ticket.status}
+                      </Badge>
+                      {ticket.status === 'recycled' && ticket.ecoPointsAwarded > 0 && (
                         <div className="flex items-center space-x-1 text-sm text-success">
                           <Award className="w-4 h-4" />
                           <span>+{ticket.ecoPointsAwarded} points</span>
                         </div>
                       )}
+
                     </div>
 
                     <div className="flex flex-wrap items-center space-x-4 text-sm text-muted-foreground">
@@ -89,9 +118,13 @@ export const WasteHistory: React.FC = () => {
                       </div>
                       <div className="flex items-center space-x-1">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(ticket.timestamps.created).toLocaleDateString()}</span>
+                        <span>
+                          {getCreatedAt(ticket)
+                            ? new Date(getCreatedAt(ticket)).toLocaleDateString()
+                            : 'N/A'}
+                        </span>
                       </div>
-                      {ticket.location && (
+                      {ticket.location?.address && (
                         <div className="flex items-center space-x-1">
                           <MapPin className="w-4 h-4" />
                           <span>{ticket.location.address}</span>
@@ -103,11 +136,15 @@ export const WasteHistory: React.FC = () => {
                       {stages.map((stage, idx) => (
                         <div key={idx} className="flex items-center space-x-1">
                           <div
-                            className={`w-2 h-2 rounded-full ${stage.completed ? 'bg-success' : 'bg-muted'}`}
-                          ></div>
+                            className={`w-2 h-2 rounded-full ${
+                              stage.completed ? 'bg-success' : 'bg-muted'
+                            }`}
+                          />
                           <span>{stage.label}</span>
                           <span className="text-muted-foreground">
-                            {stage.completed && stage.timestamp ? new Date(stage.timestamp).toLocaleDateString() : 'Pending'}
+                            {stage.completed && stage.timestamp
+                              ? new Date(stage.timestamp).toLocaleDateString()
+                              : 'Pending'}
                           </span>
                         </div>
                       ))}

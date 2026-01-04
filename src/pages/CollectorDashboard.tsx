@@ -14,6 +14,9 @@ import { QrCode, Camera, Truck, CheckCircle, MapPin, Clock, Package, Send } from
 import { Input } from '../components/ui/input';
 import { Slider } from '../components/ui/slider';
 import { toast } from '../hooks/use-toast';
+import { useEffect } from 'react';
+
+
 
 // ---------- JSON Parsing Helper ----------
 const formatClassification = (classification: string | undefined) => {
@@ -32,7 +35,7 @@ const formatClassification = (classification: string | undefined) => {
 
 export const CollectorDashboard: React.FC = () => {
   const { user } = useAuthStore();
-  const { tickets, getTicketByWasteId, updateTicketStatus } = useWasteStore();
+  const { tickets, getTicketByWasteId, updateTicketStatus, fetchTickets } = useWasteStore();
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
@@ -40,6 +43,9 @@ export const CollectorDashboard: React.FC = () => {
   const [manualWasteId, setManualWasteId] = useState('');
   const [dailyProgressValue, setDailyProgressValue] = useState([75]); // Demo progress at 75%
   const [submittingManual, setSubmittingManual] = useState(false);
+  useEffect(() => {
+  fetchTickets();
+}, [fetchTickets]);
 
   // Demo daily stats
   const dailyStats = {
@@ -47,15 +53,20 @@ export const CollectorDashboard: React.FC = () => {
     totalWeight: 75,
     verificationRate: 98,
     completedToday: tickets.filter(t => 
-      t.collectorId === user?.id && 
-      t.timestamps.collected &&
-      new Date(t.timestamps.collected).toDateString() === new Date().toDateString()
-    ).length
+    t?.collectorId === user?.id &&
+    t?.timestamps?.collected &&
+    new Date(t.timestamps.collected).toDateString() === new Date().toDateString()
+  ).length
+
   };
 
-  const todaysTickets = tickets.filter(t => 
-    t.collectorId === user?.id || t.status === 'pending'
+ const todaysTickets = tickets.filter(t =>
+    t &&
+    (t.status === 'pending' ||
+    (t.status === 'collected' && t.collectorId === user?.id))
   );
+
+
 
   const handleManualSubmit = async () => {
     if (!manualWasteId.trim()) {
@@ -110,18 +121,35 @@ export const CollectorDashboard: React.FC = () => {
     setShowCamera(true);
   };
 
-  const handleProofPhoto = (imageData: string) => {
-    if (!selectedTicket) return;
-    
-    updateTicketStatus(selectedTicket.wasteId, 'collected', user?.id, imageData);
+  const handleProofPhoto = async (imageData: string) => {
+  if (!selectedTicket || !user?.id) return;
+
+  try {
+    // 🔥 WAIT for backend + Firestore update
+    await updateTicketStatus(
+      selectedTicket.wasteId,
+      'collected',
+      user.id,
+      imageData
+    );
+
     setShowCamera(false);
     setSelectedTicket(null);
-    
+
     toast({
       title: "Waste collected successfully!",
-      description: "The waste status has been updated and proof photo uploaded.",
+      description: "The waste status has been updated.",
     });
-  };
+  } catch (error) {
+    toast({
+      title: "Collection failed",
+      description: "Could not update waste status.",
+      variant: "destructive",
+    });
+  }
+};
+
+
 
   const handleUpdateProgress = () => {
     if (dailyProgressValue[0] < 100) {
@@ -136,23 +164,39 @@ export const CollectorDashboard: React.FC = () => {
     setShowCamera(true);
   };
 
-  const handleProgressPhoto = (imageData: string) => {
-    // Update multiple tickets to recycled status
-    todaysTickets
-      .filter(t => t.status === 'collected' && t.collectorId === user?.id)
-      .slice(0, 3) // Demo: update first 3 collected items
-      .forEach(ticket => {
-        updateTicketStatus(ticket.wasteId, 'recycled', user?.id, imageData);
-      });
+  const handleProgressPhoto = async (imageData: string) => {
+  if (!user?.id) return;
+
+  try {
+    const collectedTickets = todaysTickets.filter(
+      t => t.status === 'collected' && t.collectorId === user.id
+    ).slice(0, 3); // demo limit
+
+    for (const ticket of collectedTickets) {
+      await updateTicketStatus(
+        ticket.wasteId,
+        'recycled',
+        user.id,
+        imageData
+      );
+    }
 
     setShowCamera(false);
     setProofPhotoStep(false);
-    
+
     toast({
       title: "Daily progress updated!",
-      description: "Waste items have been marked as recycled and citizens will receive their eco points.",
+      description: "Waste items marked as recycled successfully.",
     });
-  };
+  } catch (error) {
+    toast({
+      title: "Update failed",
+      description: "Could not mark waste as recycled.",
+      variant: "destructive",
+    });
+  }
+};
+
 
   if (showCamera) {
     return (
@@ -393,7 +437,7 @@ export const CollectorDashboard: React.FC = () => {
               <div className="space-y-4">
                 {todaysTickets.slice(0, 5).map((ticket) => (
                   <div
-                    key={ticket.id}
+                    key={ticket.id ?? ticket.wasteId}
                     className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => setSelectedTicket(ticket)}
                   >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/Layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -11,8 +11,13 @@ import { CollectorMonitoring } from '../components/Municipality/CollectorMonitor
 import { Map, BarChart3, Users, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const MunicipalityDashboard: React.FC = () => {
-  const { tickets } = useWasteStore();
+  const { tickets, fetchTickets } = useWasteStore();
   const [selectedView, setSelectedView] = useState<'heatmap' | 'reports' | 'monitoring'>('heatmap');
+
+  // 🔥 CRITICAL FIX: fetch tickets on mount
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
 
   // Calculate municipality stats
   const totalWaste = tickets.length;
@@ -195,7 +200,7 @@ export const MunicipalityDashboard: React.FC = () => {
           </CardHeader>
         </Card>
 
-        {/* Dynamic Content Based on Selected View */}
+        {/* Dynamic Content */}
         {renderCurrentView()}
       </div>
     </DashboardLayout>
