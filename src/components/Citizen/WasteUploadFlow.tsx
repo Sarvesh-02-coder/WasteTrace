@@ -14,7 +14,7 @@ interface WasteUploadFlowProps {
 }
 
 export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, onCancel }) => {
-  const API_URL = import.meta.env.VITE_API_URL ?? 'https://wastetrace-bc.onrender.com';
+  const API_URL = 'https://wastetrace-bc.onrender.com';
   const [step, setStep] = useState<'select' | 'camera' | 'preview'>('select');
   const [imageData, setImageData] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
