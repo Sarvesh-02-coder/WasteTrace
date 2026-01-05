@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { WasteTicket } from '../types';
 import { useAuthStore } from './useAuthStore';
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL ?? 'https://wastetrace-bc.onrender.com';
 
 
 
