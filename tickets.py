@@ -3,40 +3,49 @@ from datetime import datetime
 import uuid
 from db import tickets_ref
 
-router = APIRouter()
 
-from fastapi import APIRouter
-from datetime import datetime
-from db import tickets_ref
 
 router = APIRouter()
 
-@router.put("/tickets/{waste_id}/status")
-def update_ticket_status(waste_id: str, payload: dict):
-    doc_ref = tickets_ref.document(waste_id)
-    doc = doc_ref.get()
+def generate_area_id(location: dict | None) -> str:
+    if not location:
+        return "unknown"
 
-    if not doc.exists:
-        return {"error": "Ticket not found"}
+    lat = location.get("lat")
+    lng = location.get("lng")
 
-    update_data = {
-        "status": payload.get("status"),
-        "updatedAt": datetime.utcnow().isoformat(),
-    }
+    if lat is None or lng is None:
+        return "unknown"
 
-    if payload.get("collectorId"):
-        update_data["collectorId"] = payload["collectorId"]
+    # round to cluster nearby points into same area
+    return f"{round(lat, 3)}_{round(lng, 3)}"
 
-    if payload.get("proofImageUrl"):
-        update_data["proofImageUrl"] = payload["proofImageUrl"]
-
-    doc_ref.update(update_data)
-
-    return {"success": True, "wasteId": waste_id}
+def calculate_trucks(pending_count: int) -> int:
+    """
+    Simple dynamic truck allocation logic.
+    You can tune these numbers later.
+    """
+    if pending_count >= 20:
+        return 5
+    elif pending_count >= 10:
+        return 3
+    elif pending_count >= 5:
+        return 2
+    elif pending_count > 0:
+        return 1
+    return 0
 
 
 @router.post("/tickets")
 def create_ticket(payload: dict):
+    print("RAW PAYLOAD:", payload)
+
+    location = payload.get("location")
+    print("LOCATION RECEIVED:", location)
+
+    area_id = generate_area_id(location)
+    print("AREA ID GENERATED:", area_id)
+
     waste_id = f"WT-{uuid.uuid4().hex[:6].upper()}"
 
     ticket = {
@@ -44,7 +53,35 @@ def create_ticket(payload: dict):
         "citizenId": payload.get("citizenId", "demo-citizen"),
         "classification": payload.get("classification", "unknown"),
         "status": "pending",
-        "location": payload.get("location"),
+        "location": location,
+        "areaId": area_id,   # 👈 DO NOT MOVE THIS
+        "ecoPointsAwarded": 0,
+        "collectorId": None,
+        "proofImageUrl": None,
+        "timestamps": {
+            "created": datetime.utcnow().isoformat(),
+            "collected": None,
+            "recycled": None,
+        },
+        "createdAt": datetime.utcnow().isoformat(),
+        "updatedAt": datetime.utcnow().isoformat(),
+    }
+
+    print("FINAL TICKET:", ticket)
+
+    tickets_ref.document(waste_id).set(ticket)
+    return ticket
+
+    waste_id = f"WT-{uuid.uuid4().hex[:6].upper()}"
+    location = payload.get("location")
+    area_id = generate_area_id(location)
+    ticket = {
+        "wasteId": waste_id,
+        "citizenId": payload.get("citizenId", "demo-citizen"),
+        "classification": payload.get("classification", "unknown"),
+        "status": "pending",
+        "location": location,
+        "areaId": area_id,
         "ecoPointsAwarded": 0,
 
         # 🔽 ADDED (non-breaking)
@@ -60,6 +97,8 @@ def create_ticket(payload: dict):
         "createdAt": datetime.utcnow().isoformat(),
         "updatedAt": datetime.utcnow().isoformat(),
     }
+    print("📍 LOCATION RECEIVED:", location)
+    print("🗺️ AREA ID GENERATED:", area_id)
 
     tickets_ref.document(waste_id).set(ticket)
     return ticket
@@ -107,3 +146,51 @@ def update_ticket_status(waste_id: str, payload: dict):
 
     doc_ref.set(ticket)
     return ticket
+
+@router.get("/areas/summary")
+def area_waste_summary():
+    docs = tickets_ref.stream()
+
+    area_stats = {}
+
+    for doc in docs:
+        ticket = doc.to_dict()
+        area_id = ticket.get("areaId", "unknown")
+
+        if ticket.get("status") != "pending":
+            continue
+
+        if area_id not in area_stats:
+            area_stats[area_id] = {
+                "pendingWaste": 0
+            }
+
+        area_stats[area_id]["pendingWaste"] += 1
+
+    return area_stats
+
+@router.get("/areas/trucks")
+def area_truck_assignment():
+    docs = tickets_ref.stream()
+
+    area_stats = {}
+
+    for doc in docs:
+        ticket = doc.to_dict()
+        area_id = ticket.get("areaId", "unknown")
+
+        if ticket.get("status") != "pending":
+            continue
+
+        area_stats.setdefault(area_id, 0)
+        area_stats[area_id] += 1
+
+    result = {}
+
+    for area_id, pending_count in area_stats.items():
+        result[area_id] = {
+            "pendingWaste": pending_count,
+            "trucksAssigned": calculate_trucks(pending_count)
+        }
+
+    return result

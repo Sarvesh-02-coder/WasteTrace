@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { WasteTicket } from '../types';
 import { useAuthStore } from './useAuthStore';
-const API_URL ='https://wastetrace-bc.onrender.com';
+const API_URL = 'http://127.0.0.1:8000';
 
 
 
@@ -23,7 +23,19 @@ interface WasteState {
     status: WasteTicket['status'],
     collectorId?: string,
     proofImageUrl?: string
+
   ) => Promise<void>;
+
+    fetchTruckAssignments: () => Promise<
+    Record<
+      string,
+      {
+        pendingWaste: number;
+        trucksAssigned: number;
+      }
+    >
+  >;
+
 
   getTicketsByUser: (userId: string) => WasteTicket[];
   getTicketByWasteId: (wasteId: string) => WasteTicket | undefined;
@@ -106,4 +118,15 @@ export const useWasteStore = create<WasteState>((set, get) => ({
     get().tickets.find(ticket => ticket.wasteId === wasteId),
 
   setCurrentTicket: (ticket) => set({ currentTicket: ticket }),
+  
+  // ==============================
+  // 🚛 Fetch dynamic truck assignment
+  // ==============================
+  fetchTruckAssignments: async () => {
+    const res = await fetch(`${API_URL}/areas/trucks`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch truck assignments");
+    }
+    return await res.json();
+  },
 }));

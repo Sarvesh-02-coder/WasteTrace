@@ -14,7 +14,7 @@ interface WasteUploadFlowProps {
 }
 
 export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, onCancel }) => {
-  const API_URL = 'https://wastetrace-bc.onrender.com';
+  const API_URL = 'http://127.0.0.1:8000';
   const [step, setStep] = useState<'select' | 'camera' | 'preview'>('select');
   const [imageData, setImageData] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -108,7 +108,19 @@ export const WasteUploadFlow: React.FC<WasteUploadFlowProps> = ({ onComplete, on
       }
 
       // 2️⃣ Create ticket (IMPORTANT FIX)
-      const location = await getCurrentLocation();
+      let location;
+
+      try {
+        location = await getCurrentLocation();
+      } catch (err) {
+        console.warn("Location access failed, using fallback");
+        location = {
+          lat: 0,
+          lng: 0,
+          address: area || "Location unavailable",
+        };
+      }
+
 
       await createWasteTicket(
         user.id,
